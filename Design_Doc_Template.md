@@ -2,7 +2,6 @@
 * **Status:** [Draft | In-Review | Approved | Implemented]
 * **Author(s):** [GitHub Username]
 * **Last Updated:** [Date of last update]
-* **Implemented In:** [PR of initial implementation]
 
 ---
 
@@ -12,6 +11,12 @@ Give a highlevel overview of the need for this design doc.
 ### Current Issue / Current State / Motivation
 Explain the current state, issues, and/or gaps that exist today and the motivation
 behind this design proposal.
+
+### User Journey / Use Case (optional)
+Provide details about the user journey or use case this will serve.
+
+### Requirements (optional)
+Describe requirements for this design.
 
 ## Goals
 * Explicit list of items within the scope of this design

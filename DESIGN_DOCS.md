@@ -24,10 +24,6 @@ with a design doc written using this process.
     feature implementation needs to be updated or the design doc needs to be
     updated.
 
-5.  **Keeping Docs Updated:** If the implementation evolves or deviates from the
-    original design over time, the design document should be updated ensuring it
-    remains an accurate reflection of the system.
-
 The core benefits of this approach are the collaborative refinement of ideas
 and a lightweight process for keeping documentation up-to-date. It also allows
 for AI agents to be used continuously throughout the process to faciliate
