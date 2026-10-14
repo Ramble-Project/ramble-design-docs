@@ -109,7 +109,9 @@ There are three main areas that should be addressed:
 ## Goals
 
 * `AGENTS.md` will be refactored and optimized to reduce context impact and provide clear
-  guidance of how to find additional information or skills.
+  guidance of where to find additional information or skills. The refactor will focus on
+  retaining the "rules of the road" and high level guidance while moving implementation
+  and task specifics into appropriate skill files.
 * The current set of skills will be expanded to include:
   * Executing Ramble experiments and tracking their status.
   * Analyzing experiment results.
@@ -146,12 +148,24 @@ this are:
 
 ### `SKILL.md` Format
 
-The `SKILL.md` must follow standard formatting - YAML frontmatter followed by Markdown
-content. Skills should be written as prescriptive as necessary to create somewhat
-reproducible and predictable steps, but still allow the agent to explore how to achieve
-what’s being requested. For example, a skill might dictate that `workspace analyze` be
-used to determine experiment status and results to prevent it from reinventing the wheel
-to do that, but still leave it free to explore how to debug a failed experiment.
+The `SKILL.md` must follow standard formatting (e.g.,
+[Agent Skills Standard](https://agentskills.io/specification)) - YAML frontmatter followed
+by Markdown content. Skills should be written as prescriptive as possible to facilitate
+reproducible and predictable steps. Scripts should be written that the skill can utilize to
+help with reproduciblity. For example, a skill might dictate that `ramble workspace analyze`
+be used to determine experiment status and results while using a script to triage common
+failure cases (e.g, full fileystems, OOM, etc.). This approach will facilitate
+reproducibility and discourage rabbit holes like using `objdump`, `nm`, or `strings` for
+discovery. When developing new skills, if you notice the agent constantly writing custom
+Python scripts or using tools like previously mentioned, that's an indicator a skill script
+or other guardrails should be investigated.
+
+Likewise, skills should be narrowly focused allowing the agent to compose them together
+to achieve more complex tasks. For example, rather than write one skill that analyzes
+the Ramble experiment results, checking if any experiment jobs are still pending or
+running, and triaging any failed experiments - it's better to split those into three
+separate skills - a results analyzer, a job status checker, and a failure triage skill.
+That will reduce the need for the skill to have complex if/then logic and complex steps.
 
 
 #### YAML Frontmatter
