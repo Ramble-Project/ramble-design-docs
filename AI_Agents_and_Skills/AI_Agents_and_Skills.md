@@ -7,10 +7,9 @@
 
 ## Overview
 
-Today, Ramble includes one top-level `AGENTS.md` file and one skill, the Ramble Workspace
-Wizard. The `AGENTS.md` includes most of the Ramble "ground rules" as well as specific
-how-tos for certain things. The Ramble Workspace Wizard skill comprehensively describes
-how to create, interact with, and use Ramble workspaces.
+Today, Ramble includes one top-level `AGENTS.md` file and one skill, the **Workspace
+Wizard**. The `AGENTS.md` includes most of the Ramble "ground rules" as well as specific
+how-tos for certain things - e.g., Ramble configuration file specifics, Spack information, how to develop new object definitions, etc. The **Workspace Wizard** skill comprehensively describes how to create, interact with, and use Ramble workspaces.
 
 
 ### Current Issues
@@ -18,21 +17,93 @@ how to create, interact with, and use Ramble workspaces.
 There are three main areas that should be addressed:
 
 1. The `AGENTS.md` is added to every prompt. Ideally it should only contain the "rules
-   of the road" and directions of where to find more specific instructions/how-tos not
-   those kinds of specifics. For example, there is currently a section "How to Write
-   an Application Definition". Because the `AGENTS.md` is included with every prompt,
-   this information is being included whether it is relevant to the task at hand and
-   consuming context window and tokens unnecessarily.
+   of the road" and directions of where to find more specific instructions/how-tos - not
+   specifics that aren't globally relevant. For example, there is currently a section
+   *How to Write an Application Definition*. Because the `AGENTS.md` is included with
+   every prompt, this information is being included whether it is relevant to the task
+   at hand and consuming context window and tokens unnecessarily.
 1. There are Ramble aspects that could be covered by additional skills: analyzing
-   results, debugging Spack issues, interacting with workflow managers, developing new
-   Ramble features, etc.
+   results, debugging experiment issues, interacting with workflow managers, developing
+   new Ramble features, etc.
 1. For the skills that are there - the Ramble Workspace Wizard and the Writing an
    Application Definition (that is currently embedded in `AGENTS.md`) there are no skill
    evaluators - i.e., `EVAL.txtpb`. For each skill there should be an evaluator to
    ensure that what the skill produces is what's desirable and intended.
 
 
-## User Journey
+## User Journeys
+
+### Journey 1: Running, Debugging, and Analyzing a Scaling Study
+
+* **Persona:** An HPC performance engineer using an AI coding assistant (e.g., Gemini
+  CLI, Claude Code, or Cursor) to run a GROMACS scaling study on a Slurm cluster.
+* **Journey:**
+  1. The user asks the agent to set up a GROMACS scaling workspace from 1 to 8 nodes. The 
+     agent reads the `AGENTS.md` and loads only the **Workspace Wizard** and **Workflow
+     Managers** skills to configure `ramble.yaml`.
+  1. After all the experiment jobs have completed, the user asks, *"Did all experiments
+     complete successfully?"* The agent dynamically loads the **Job Status** skill and
+     determines that 2 of the 8-node jobs failed. The agent then loads the **Failure
+     Triage** skill, inspects the experiment logs and Slurm output, and identifies one
+     failed due to a node failure and the other ran out of space while writing logs. The
+     agent suggests cleaning up storage capacity and the exact `ramble` command to re-run
+     only the failed experiments once there is free capacity.
+  1. Once all runs succeed, the user asks, *"Analyze the workspace results and provide a
+     scaling summary."* The agent loads the **Results Analysis** skill, runs `ramble
+     workspace analyze`, generates a parallel efficiency report, and provides a CSV file
+     of all FOM results.
+* **Outcome:** The user completes the entire experiment lifecycle via natural language,
+  while the agent only loads instructions relevant to the current phase — saving tokens
+  and providing the data the user needs to complete their task.
+
+
+### Journey 2: Authoring a New Application Definition
+
+* **Persona:** A domain scientist adding a new benchmark application (`hpcbench`) to
+  Ramble.
+* **Journey:**
+  1. The user prompts the agent to create a new Ramble application definition for
+     `hpcbench` using Spack.
+  1. The agent reads the `AGENTS.md` and loads the **Definition Author** and
+     **Spack Integration** skills.
+  1. Following the skill's workflow, the agent checks `ramble software-definitions
+     --summary` to avoid package conflicts, writes `application.py` using valid Ramble
+     directives (`workload`, `figure_of_merit`, `success_criteria`, etc.), and verifies
+     there are no software spec conflicts.
+* **Outcome:** The user gets a style-compliant, working `application.py` that can be used
+  as-is or further extended by them.
+
+
+### Journey 3: Developing and Testing a Ramble Code Fix
+
+* **Persona:** A software engineer contributing a bug fix to the Ramble codebase.
+* **Journey:**
+  1. The user prompts the agent to implement a fix for bug XYZ in `lib/ramble/rable/` and
+     create relevant unit tests.
+  1. The agent reads the `AGENTS.md` and loads the **Ramble Developer** skill, develops a
+     fix for the issue the user described, creates proper Ramble wrapped pytest unit
+     tests, runs the tests via `ramble unit-test -k <test_name>`, and validates formatting
+     using `ramble style`.
+  1. The user asks the agent, *"Update the documentation to reflect the change in behavior
+     from the implemented fix."*
+  1. The agent loads the **Documentation Author** skill to update the Sphinx `.rst` docs
+     properly and then builds the docs locally to ensure they build properly.
+* **Outcome:** Contributions follow Ramble's testing and style conventions automatically
+  without requiring extensive back-and-forth during PR review.
+
+
+### Journey 4: Updating and Evaluating a Ramble Skill
+
+* **Persona:** A Ramble maintainer updating a skill after a CLI change.
+* **Journey:**
+  1. A maintainer updates the `SKILL.md` for the **Workspace Wizard** skill to reflect a
+     new `ramble workspace manage` flag.
+  1. Before opening a PR, the maintainer runs an evaluation harness against the skill's
+     `evals.json` file.
+  1. The harness runs the test prompts with and without the updated skill and verifies
+     that the agent produces the expected `ramble` commands and configuration outputs.
+* **Outcome:** Maintainers have objective, reproducible verification that skill changes
+  improve agent accuracy and don't introduce regressions.
 
 
 ## Goals
@@ -56,14 +127,14 @@ There are three main areas that should be addressed:
 
 ## Non-Goals
 
-* Developing or extending third party tools AI capabilities - e.g., developing a new Spack
-  application, creating and deploying Cluster Toolkit clusters, etc.
+* Creating skills that develop or extend third party tools AI capabilities - e.g.,
+  developing a new Spack application, creating and deploying Cluster Toolkit clusters, etc.
 
 
 ## Design / Architecture
 
-The `AGENTS.md` will remain in place as is and be refactored to extract extraneous
-information into new skills or other appropriate locations. New skills will be added under
+The `AGENTS.md` will remain in place and be refactored to extract extraneous information
+into new skills or other appropriate locations. New skills will be added under
 `.agents/skills` and include at a minimum a `SKILL.md` file and at least one skill
 evaluator. Additional files and directories may be needed for certain skills. Examples of
 this are:
