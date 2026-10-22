@@ -33,6 +33,48 @@ Adding declarative derived FOMs eliminates this boilerplate and keeps FOM defini
        fom_type=FomType.THROUGHPUT,
    )
    ```
+
+    To achieve the same without derived FOMs, this is what the current implementation in the builtin repo looks like:
+
+    ```python
+    figure_of_merit(
+        "Nanoseconds per day",
+        log_file=namd_nspd_stat_file,
+        fom_regex=r"(?P<ns_per_day>[0-9]+\.*[0-9]*) ns/day",
+        group_name="ns_per_day",
+        units="ns/day",
+    )
+
+    # Override _analyze_experiments to compute ns/day from days/ns
+    def _analyze_experiments(self, workspace, app_inst=None):
+        """Generate ns/day metric for the experiment"""
+
+        log_path = self.expander.expand_var(self.log_file_str)
+        ns_regex = re.compile(self.benchmark_regex)
+
+        dpns = None
+
+        if os.path.isfile(log_path):
+            with open(log_path, encoding="utf-8") as f:
+                for line in f:
+                    match = ns_regex.match(line)
+                    if match:
+                        dpns = float(match.group("days_per_ns"))
+
+        if dpns:
+            nspd = 1.0 / dpns
+            nspd_file_path = os.path.join(
+                self.expander.expand_var(
+                    self.expander.expansion_str(keywords.experiment_run_dir)
+                ),
+                "namd_nspd_stat.out",
+            )
+            with open(nspd_file_path, "w+", encoding="utf-8") as f:
+                f.write(f"{nspd} ns/day\n")
+
+        super()._analyze_experiments(workspace)
+    ```
+
 2. **Context Aggregation via Callable:** A modifier author extracts per-GPU info within a `figure_of_merit_context` and wants a summary FOM in the default (`"null"`) context. The author supplies a callable `formula` that queries `app.get_fom_values(fom_name, context=...)`:
    ```python
    figure_of_merit(
