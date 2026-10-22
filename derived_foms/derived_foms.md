@@ -85,6 +85,17 @@ Adding declarative derived FOMs eliminates this boilerplate and keeps FOM defini
    )
    ```
 
+The callable is supported to provide more flexibility and control to Ramble object developers. For instance, for the following derived FOM definition, if there is an FOM named 'a', and there is an experiment variable also named 'a', then the expansion will use the value of the FOM 'a' over the value of the experiment variable 'a'. To use the value of the variable 'a' instead, then the derived FOM can define a callable and explicitly extract the value of the experiment variable 'a' using `app.expander.expand_var_name('a')`.
+
+    ```python
+    figure_of_merit(
+        "derived_fom_a",
+        units="ns/day",
+        formula="2 * {a}",
+        fom_type=FomType.THROUGHPUT,
+   )
+    ```
+
 ### Requirements
 
 * Extend the `figure_of_merit` directive with a `formula` parameter that accepts either a string expression or a Python callable.
@@ -97,4 +108,4 @@ Adding declarative derived FOMs eliminates this boilerplate and keeps FOM defini
 * Add `formula` support to `figure_of_merit` in `shared_language.py` with clear validation of mutually exclusive arguments.
 * Implement iterative derived FOM resolution during experiment analysis in `ApplicationBase.extract_inmem_foms`.
 * Expose `get_fom_value` and `get_fom_values` on `ApplicationBase` and `ObjectMixin`.
-* Refactor existing builtin applications, modifiers, and workflow managers (`namd`, `wrf`, `wrfv3`, `wrfv4`, `openfoam`, `multichase`, `py-nemo`, `exit-code`, `nvidia-smi`, `tuned-adm`, `slurm`) to use derived FOMs and remove redundant analysis phases and temporary files.
+* Refactor existing builtin applications, modifiers, and workflow managers to use derived FOMs and remove redundant analysis phases and temporary files.
