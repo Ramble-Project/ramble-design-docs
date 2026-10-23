@@ -18,8 +18,9 @@ There are three main areas that should be addressed:
 
 1. The `AGENTS.md` is added to every prompt. Ideally it should only contain the "rules
    of the road" and directions of where to find more specific instructions/how-tos - not
-   specifics that aren't globally relevant. For example, there is currently a section
-   *How to Write an Application Definition*. Because the `AGENTS.md` is included with
+   specifics that aren't globally relevant. For example, there are currently sections
+   detailing Spack, how to develop new object defintions, and how to write an application
+   definition Because the `AGENTS.md` is included with
    every prompt, this information is being included whether it is relevant to the task
    at hand and consuming context window and tokens unnecessarily.
 1. There are Ramble aspects that could be covered by additional skills: analyzing
@@ -27,8 +28,13 @@ There are three main areas that should be addressed:
    new Ramble features, etc.
 1. For the skills that are there - the Ramble Workspace Wizard and the Writing an
    Application Definition (that is currently embedded in `AGENTS.md`) there are no skill
-   evaluators - i.e., `EVAL.txtpb`. For each skill there should be an evaluator to
-   ensure that what the skill produces is what's desirable and intended.
+   evaluators - i.e., `evals.json`. For each skill there should be an evaluator to
+   ensure that what the skill produces is what's desirable and intended. These evals
+   are meant primarily to evaluate that the skill is producing desired, correct, and
+   consistent results. Depending on the eval harness used, they can also be used to
+   perform model evaluation as well, though this would be a secondary purpose of the
+   evals.
+   
 
 
 ## User Journeys
@@ -136,10 +142,32 @@ There are three main areas that should be addressed:
 ## Design / Architecture
 
 The `AGENTS.md` will remain in place and be refactored to extract extraneous information
-into new skills or other appropriate locations. New skills will be added under
-`.agents/skills` and include at a minimum a `SKILL.md` file and at least one skill
-evaluator. Additional files and directories may be needed for certain skills. Examples of
-this are:
+into new skills or other appropriate locations. The `AGENTS.md` would retain/contain the
+following information:
+* **What is Ramble?** : Basically the Ramble mission and its strengths
+* **The Ramble CLI** : Key `ramble` commands, how to disocver other commands and their
+  use (i.e., `--help` and `help`), and how to find the documentation in the code base
+  (i.e., `docs/command_references.rst`)
+* **Ramble Configuration File Overview** : Its YAML format, directory structure, key
+  elements, and links to code base documentation (i.e., `docs/workspace_config.rst` and
+  `docs/configuration_files.rst`)
+* **Package Managers Overview** : Very highlevel description of the package managers and
+  links to code base documentation (i.e., `docs/package_managers.rst`)
+* **Key Ramble Resources** : Links to examples (`examples/`) and general code base
+  documentation (`docs/`)
+* **Available Agent Skills** : A table of the skills, their description, and a link to
+  their location
+
+Links to the code base and documentation should be relative to the repo root (since that
+is where the `AGENTS.md` lives). This will ensure the agent is using whatever the latest
+version is of these resources. If documentation links instead point to the ReadTheDocs
+pages, it would create unnecessary permission prompts for the agent to access that URL
+(unless the use has specifically allowed that in their agent configuration) and may point
+to out of date documentation for the running code base.
+
+New skills will be added under `.agents/skills` and include at a minimum a `SKILL.md` file
+and at least one skill evaluator. Additional files and directories may be needed for
+certain skills. Examples of this are:
 
 * `scripts/`: Directory for additional scripts necessary for the skill to function
 * `references/`: Directory for additional documentation that is relevant to the skill
