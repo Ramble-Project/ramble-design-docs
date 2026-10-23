@@ -195,6 +195,22 @@ running, and triaging any failed experiments - it's better to split those into t
 separate skills - a results analyzer, a job status checker, and a failure triage skill.
 That will reduce the need for the skill to have complex if/then logic and complex steps.
 
+A propsed list of initial skills is:
+
+| Skill | Description |
+| :--- | :--- |
+| **Workspace Wizard** | Interactive setup of experiment workspaces, scaling matrices, and YAML configurations |
+| **Definition Author** | Authoring Ramble object definitions (e.g., Applications, Modifiers, Package/Workflow Managers, etc.) |
+| **Experiment Runner** | Using Ramble to perform experiments - execution lifecycle (`ramble on`), dry-run validation, and execution debugging |
+| **Job Status** | Experiment execution matrix, detecting active vs completed jobs |
+| **Failure Triage** | Root cause diagnosis for confirmed failed runs (NODE_FAIL, timeouts, OOM, spool aborts, logs) |
+| **Results Analyzer** | FOM extraction and speedup & scaling efficiency metrics |
+| **Benchmark Report** | Comprehensive HPC benchmark reports comparing multiple Ramble workspaces across applications, workloads, and platforms |
+| **Documentation Author** | Writing Sphinx/reST documentation in `docs/`, building HTML docs, and link checking |
+| **Spack Integration** | Spack specs (`pkg@ver %compiler`), environment mapping, and concretization troubleshooting |
+| **Workflow Managers** | Slurm batch directives (`#SBATCH`), partition settings, and launcher overrides |
+| **Developer Guide** | Guidelines for codebase contributors: pytest fixtures (`make_workspace_from_config`), directive lazy loading, and style checks |
+
 
 #### YAML Frontmatter
 
@@ -245,3 +261,19 @@ While it's outside the scope of this design doc, possible evaluator tools/harnes
   Yet another tool based on the `evals.json` format
 * [Harbor](https://github.com/harbor-framework/harbor) : Containerized solution more
   geared towards model evaluation
+* NVIDIA’s [SkillEvaluator](https://docs.nvidia.com/skills/skillevaluator/) : 3-tier evaluation tool that uses the `evals.json` format and runs containerized tests via Harbor
+* [Promptfoo](https://github.com/promptfoo/promptfoo) : General LLM/agent evaluation tool and GitHub Action that uses its own YAML format
+* [skills-evals](https://github.com/ahnafyy/skills-evals) : Lightweight CI regression and trigger evaluation tool that uses the `evals.json` format
+* Addy Osmani’s [agent-skills](https://github.com/addyosmani/agent-skills) : Reference 3-tier CI evaluation scripts based on the `evals.json` format
+
+| Tool | Description | Pros | Cons |
+|---|---|---|---|
+| [agent-skills-eval](https://github.com/darkrishabh/agent-skills-eval) | A/B evaluation (with/without skill) and uses the `evals.json` format. | - Natively uses `evals.json` and validates `SKILL.md` frontmatter.<br>- Works across AI platforms and tools via OpenAI-compatible APIs (Gemini, Claude, OpenAI).<br>- `CI=true` option for CI friendly running, path filtering (`--include`/`--exclude`), parallel runs, assert what tools were called, and JSON/HTML reports. | - Only evaluates via API calls rather than running a CLI agent.<br>- Requires a Node.js runtime (`npx`/npm). |
+ [skill-eval-harness](https://github.com/adewale/skill-eval-harness) | Similar to above but uses a different format for the eval file. | - Python tool (`uv`/`pip`) with adapters for multiple agent CLIs (Claude, Codex, Pi, Vibe) and an offline stub for CI testing.<br>- Can grade based on code rules or an LLM judge, flags cases that either succeed without skill or skill adds no value, and checks for eval prompts that may give away how the skill should proceed (a.k.a., "eval leakage"). | - Uses `shared-benchmark.json` instead of `evals.json`, requiring a format conversion step in CI.<br>- Requires writing new Python adapter for `agy` CLI. |
+| Anthropic’s [skill-creator skill](https://github.com/anthropics/skills/tree/main/skills/skill-creator) | Suite of skill development/refinement tools that includes evaluation based on the `evals.json` format. | - Validates, evaluates (using `evals.json`), and benchmarks skills.<br>- Includes scripts to help tune `SKILL.md` descriptions. | - Coupled to Claude CLI and does not support other AI platforms (e.g., Gemini, Cursor, Antigravity).<br>- Designed for interactive human review rather than automated CI runs. |
+| AWS sample [agent-skill-eval](https://github.com/aws-samples/sample-agent-skill-eval) | Yet another tool based on the `evals.json` format. | - Python CLI (`pip`) that uses `evals.json`.<br>- Includes a fast static checker that scans `SKILL.md` and `scripts/` for unsafe commands or secrets without needing LLM API keys.<br>- Combines static audit, A/B evaluation, and trigger accuracy into a single score. | - Maintained as an `aws-samples` repository rather than a supported package, so it may need to be pinned or vendored. |
+| [Harbor](https://github.com/harbor-framework/harbor) | Containerized solution more geared towards model evaluation. | - Runs full coding agents inside isolated containers where Ramble, Spack, and workload managers can execute real commands and be verified via test scripts.<br>- Supports multiple agent harnesses and models. | - Does not use `evals.json` natively (uses `task.toml`, `instruction.md`, and `Dockerfile`).<br>- High container build and runtime overhead for standard PR checks. |
+| NVIDIA’s [SkillEvaluator](https://docs.nvidia.com/skills/skillevaluator/) | 3-tier evaluation tool that uses the `evals.json` format and runs containerized tests via Harbor. | - Natively uses `evals.json` and automatically compiles test cases into Harbor container tasks.<br>- Supports a 3-tier CI workflow: frontmatter/schema validation (Tier 1), trigger/deduplication checks (Tier 2), and containerized A/B evaluation across multiple agents (Tier 3). | - Tier 3 execution requires Harbor infrastructure and agent CLI credentials, making it heavy for per-commit CI runs. |
+| [Promptfoo](https://github.com/promptfoo/promptfoo) | General LLM/agent evaluation tool and GitHub Action that uses its own YAML format. | - Mature CI integration with an official GitHub Action that posts PR results and enforces pass/fail thresholds.<br>- Supports all major AI platforms (Gemini, Claude, OpenAI/Codex).<br>- Evaluates both positive and negative skill triggering. | - Uses `promptfooconfig.yaml` instead of `evals.json`, requiring a wrapper script to load `evals.json`. |
+| [skills-evals](https://github.com/ahnafyy/skills-evals) | Lightweight CI regression and trigger evaluation tool that uses the `evals.json` format. | - Zero-dependency CLI designed specifically to catch regressions in `AGENTS.md` and `SKILL.md` during CI runs.<br>- Evaluates both positive and negative skill triggering . | - Focuses on trigger routing and prompt responses rather than executing multi-step CLI workflows. |
+| Addy Osmani’s [agent-skills](https://github.com/addyosmani/agent-skills) | 3-tier CI evaluation scripts based on the `evals.json` format. | - Fast, zero-cost frontmatter validation and cross-skill trigger collision checks.<br>- Supports isolated and ephemeral sandboxed test environments. | - Provided as reference repository scripts rather than an installable package, so the runner scripts would need to be adapted and maintained in Ramble. |
