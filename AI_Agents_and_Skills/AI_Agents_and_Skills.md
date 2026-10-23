@@ -250,22 +250,6 @@ correct outputs. Evaluators will use the
 
 While it's outside the scope of this design doc, possible evaluator tools/harnesses are:
 
-* [agent-skills-eval](https://github.com/darkrishabh/agent-skills-eval) : A/B evaluation
-  (with/without skill) and uses the `evals.json` format
-* [skill-eval-harness](https://github.com/adewale/skill-eval-harness) : Similar to above
-  but uses a different format for the eval file
-* Anthropic’s
-  [skill-creator skill](https://github.com/anthropics/skills/tree/main/skills/skill-creator) :
-  Part of the skill is to evaluate the skill based on the `evals.json` format
-* AWS sample [agent-skill-eval](https://github.com/aws-samples/sample-agent-skill-eval) :
-  Yet another tool based on the `evals.json` format
-* [Harbor](https://github.com/harbor-framework/harbor) : Containerized solution more
-  geared towards model evaluation
-* NVIDIA’s [SkillEvaluator](https://docs.nvidia.com/skills/skillevaluator/) : 3-tier evaluation tool that uses the `evals.json` format and runs containerized tests via Harbor
-* [Promptfoo](https://github.com/promptfoo/promptfoo) : General LLM/agent evaluation tool and GitHub Action that uses its own YAML format
-* [skills-evals](https://github.com/ahnafyy/skills-evals) : Lightweight CI regression and trigger evaluation tool that uses the `evals.json` format
-* Addy Osmani’s [agent-skills](https://github.com/addyosmani/agent-skills) : Reference 3-tier CI evaluation scripts based on the `evals.json` format
-
 | Tool | Description | Pros | Cons |
 |---|---|---|---|
 | [agent-skills-eval](https://github.com/darkrishabh/agent-skills-eval) | A/B evaluation (with/without skill) and uses the `evals.json` format. | - Natively uses `evals.json` and validates `SKILL.md` frontmatter.<br>- Works across AI platforms and tools via OpenAI-compatible APIs (Gemini, Claude, OpenAI).<br>- `CI=true` option for CI friendly running, path filtering (`--include`/`--exclude`), parallel runs, assert what tools were called, and JSON/HTML reports. | - Only evaluates via API calls rather than running a CLI agent.<br>- Requires a Node.js runtime (`npx`/npm). |
