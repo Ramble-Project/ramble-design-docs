@@ -48,28 +48,27 @@ deprecate(
     replacement="wrf@4.2",
 )
 
-# 2. Include a custom migration message
+# 2. Deprecate a specific version, workload, or variant
+with when("@:3.9.1.1"):
+    deprecate(
+        deprecated_in="0.7.0",
+        removed_in="0.8.0",
+        replacement="wrf@4.2",
+    )
+
+# 3. Include an additional custom migration message
 deprecate(
     deprecated_in="0.7.0",
     removed_in="0.8.0",
     replacement="wrf@4.2",
     msg="Update any 'wrfv4' license sections to 'wrf'.",
 )
-
-# 3. Deprecate a specific version, workload, or variant
-with when("@:3.9.1.1"):
-    deprecate(
-        deprecated_in="0.7.0",
-        removed_in="0.8.0",
-        replacement="wrf@4.2",
-        msg="WRF 3.x versions are deprecated.",
-    )
 ```
 
 ### High-Level Behavior
 1. **Shared Language Directive**: Register `deprecate` in `shared_language.py` so it is available to all object types and participates in `with when(...):` conditions just like `conflict`.
 2. **Experiment Validation**: Check active deprecations during experiment validation. When an experiment satisfies a deprecation condition:
-   * Emit a single user-facing warning for the command.
+   * Emit one user-facing warning per unique triggered deprecation per command
    * Trigger a deprecation warning for the test suite so `@deprecation.fail_if_not_removed` catches expired deprecations when `ramble_version` is bumped.
 3. **`ramble info` Integration**: Display a `deprecations` section in `ramble info <object>` showing the deprecation version, removal version, replacement, and any custom message.
 
